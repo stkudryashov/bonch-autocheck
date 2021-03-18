@@ -26,13 +26,13 @@ def schedule(rasp, week):
 
 
 def start(html):
-    soup = BeautifulSoup(html, 'html.parser')
-    lesson = soup.find('a', text='Начать занятие')
-    if lesson is not None:
+    try:
+        soup = BeautifulSoup(html, 'html.parser')
+        lesson = soup.find('a', text='Начать занятие').get('onclick')
         numb = re.findall(r'(\d+)', str(lesson))
         schedule(numb[0], numb[1])
         return True
-    else:
+    except AttributeError:
         print('Невозможно начать занятие. Новая попытка через 5 минут')
         return False
 
