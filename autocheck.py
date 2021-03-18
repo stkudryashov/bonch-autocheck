@@ -1,10 +1,50 @@
 import requests
+import time
+import re
+
 from settings import *
+from bs4 import BeautifulSoup
 
 
-headers = {
-    'User-Agent': user_agent
-}
+session = requests.Session()
+session.auth = (username, password)
+session.headers.update({'User-Agent': user_agent})
 
-response = requests.get('https://lk.sut.ru/cabinet/', headers=headers, auth=(username, password))
-print(response.status_code)
+
+def login():
+    response = session.get('https://lk.sut.ru/cabinet/')
+    return response
+
+
+def schedule(rasp, week):
+    data = {'open': '1',
+            'rasp': rasp,
+            'week': week}
+
+    response = session.post('https://lk.sut.ru/cabinet/project/cabinet/forms/raspisanie.php', data=data)
+    return response
+
+
+def start(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    lesson = soup.find('a', text='Начать занятие')
+    if lesson is not None:
+        numb = re.findall(r'(\d+)', str(lesson))
+        schedule(numb[0], numb[1])
+        return True
+    else:
+        print('Невозможно начать занятие. Новая попытка через 5 минут')
+        return False
+
+
+def main():
+    while True:
+        login()
+        response = session.post('https://lk.sut.ru/cabinet/project/cabinet/forms/raspisanie.php')
+
+        if not start(response.text):
+            time.sleep(300)
+
+
+if __name__ == '__main__':
+    main()
