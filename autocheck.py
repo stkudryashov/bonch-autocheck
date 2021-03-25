@@ -44,6 +44,9 @@ def main():
 
         if not start(response.text):
             time.sleep(300)
+        else:
+            print('Все ок')
+            time.sleep(3600)
 
 
 if __name__ == '__main__':
